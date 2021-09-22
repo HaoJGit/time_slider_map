@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="Shortcut Icon" href="/static/asster/img/homepage.ico" type="image/x-icon" />
+    <script src="../static/asster/js/jquery.js"></script>
+    <script src="../static/asster/js/echarts.min.js"></script>
+      <link rel="stylesheet" href="/static/asster/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/asster/css/ol.css">
+    <link rel="stylesheet" href="/static/asster/css/base_css.css">
+    {#      <link rel="stylesheet" href="/static/asster/css/time_slider.css">#}
+    <script src="/static/asster/js/jquery.js"></script>
+      <link rel="stylesheet" href="/static/asster/css/Add_Box.css">
+    <link rel="stylesheet" href="/static/asster/css/jquery.range.css">
+</head>
+ <style type="text/css">
+     {#background-image:url("background.jpg");#}
+    .relationdiv{
+
+        width:600px;
+        height:90%;
+        float: left;
+        border-style: double;
+        border-width: thick;
+        outline-style: groove;
+
+    }
+    .celebritydiv{
+        display: none;
+        float: right;
+        text-shadow: 2px 2px 5px gainsboro;
+        text-align: left;
+
+        position:absolute;
+        left:800px;
+        top:100px;
+        right:300px;
+
+        text-indent: 25px;
+
+    }
+    .button{
+        background-color: gainsboro;
+        font-size: 20px;
+        border-radius: 8px;
+
+    }
+    .button:hover{
+        background-color:black;
+        color:white;
+        box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+    }
+    .Name{
+        font-size: 35px;
+    }
+    .Dynasty{
+        font-size:25px;
+    }
+    .Region{
+        font-size:20px;
+
+    }
+    .Info{
+        font-size:15px;
+        line-height:30px;
+        word-spacing: 10px;
+        word-wrap: break-word;
+    }
+    body{
+        background-color: #ffffff;
+
+    }
+    .featuresdiv{
+        {#background-image:url("./static/asster/img/154357.png");#}
+        {#height:1000px;#}
+        {#width:300px;#}
+        {#float:right;#}
+        {#align:right;#}
+    }
+</style>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <nav class="navbar navbar-dark bg-dark">
+                <div class="container-fluid">
+                   <a class="navbar-brand" href=" http://127.0.0.1:5000/ ">山东历史信息系统</a>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+</div>
+<div id="relation" class="relationdiv"></div>
+<div id="celebrity_info" class="celebritydiv">
+    <div id="name" class="Name"></div>
+    <div id="dynasty" class="Dynasty"></div>
+    <div id="now_where" class="Region"></div>
+    <div id="info" class="Info"></div>
+
+    <form action="rel_timemap" method="POST">
+      <input type="text" id="in_name" name="in_name" style="display: none"/>
+      <button type="submit" id="relationship" class = button>时间地图显示</button>
+    </form>
+</div>
+<div id="features" class="featuresdiv"></div>
+</body>
+<script type="text/javascript">
+    var myChart = echarts.init(document.getElementById('relation'));
+    var categories = [
+    {
+        "name": "类目0",
+        'itemStyle':{
+            'normal':{
+                'color':'orange'
+            }
+        }
+    },
+    {
+        "name": "类目1",
+        'itemStyle':{
+            'normal':{
+                'color':'gray'
+            }
+        }
+    },
+    {
+        "name": "类目2",
+        'itemStyle':{
+            'normal':{
+                'color':'green'
+            }
+        }
+    },
+    ];
+    option = {
+// 图的标题
+            title: {
+            },
+// 提示框的配置
+            tooltip: {
+            },
+// 工具箱
+            toolbox: {
+            },
+            //animation: false,
+            series: [{
+                type: 'graph', // 类型:关系图
+                layout: 'force', //图的布局，类型为力导图
+                //roam: true, // 是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移,可以设置成 'scale' 或者 'move'。设置成 true 为都开启
+                //draggable : true,
+                edgeSymbol: ['circle', 'arrow'],
+                edgeSymbolSize: [2, 5],
+                //focusNodeAdjacency: true,
+                force: {
+                    repulsion: 1000,
+                    edgeLength: [5, 10],
+                    layoutAnimation: false
+                },
+                lineStyle: {
+                    normal: {
+                        width: 1,
+                        color: '#4b565b',
+                    }
+                },
+                edgeLabel: {
+                    normal: {
+                        show: true,
+                        formatter: function (x) {
+                            return x.data.name;
+                        },
+                        textStyle: {
+                            fontSize:10
+                        }
+                    }
+                },
+                label: {
+                    normal: {
+                        show: true,
+                        textStyle: {
+                            fontSize:10
+                        }
+                    }
+                },
+                data:
+                    {{ Nodes|tojson }},
+                links:
+                    {{ Links|tojson }},
+                categories: categories,
+            }]
+        };
+    myChart.setOption(option);
+    myChart.on('click', function (param){
+          if (param.data.category == 1) {
+              alert("数据库无" + param.name)
+        }
+          if (param.data.category == 2) {
+
+              {#alert("点击了节点" + param.name)#}
+              url="/relationship_tackle";
+              var params={};
+              params.name=param.name;
+              $.post(url,params,function (res){
+                 $("#celebrity_info").show();
+                $('#name').text(res.name);
+                $('#dynasty').text(res.dynasty);
+                $('#info').text(res.info);
+                $('#now_where').text(res.now_where);
+                $('#in_name').val(res.name)
+              })
+        }
+
+    });
+</script>
+</html>
